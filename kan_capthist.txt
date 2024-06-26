@@ -1,0 +1,25 @@
+#season	ID	occasion	detector
+1	Kananaskis_F3	2	34
+1	M36	3	10A
+1	M36	5	10A
+1	Kananaskis_F1	1	23
+1	Kananaskis_M2	1	23
+1	poor_DNA	1	24
+1	poor_DNA	2	10
+1	poor_DNA	2	22
+1	Kananaskis_M2	2	23
+1	poor_DNA	3	13
+1	Kananaskis_M2	3	23
+1	poor_DNA	3	27
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			

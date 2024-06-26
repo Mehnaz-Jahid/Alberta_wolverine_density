@@ -1,0 +1,106 @@
+rm(list = ls())
+
+library(secr)
+library(rgdal)
+library(rgeos)
+library(sf)
+dir<- "C:\\Users\\mehnazjahid\\Desktop\\UVic\\Wolverine\\R"
+setwd(dir)
+
+####### Wilmore ########
+wilmore.ch <- read.capthist("wilmore_capthist_v2.txt", "wilmore_traps.txt", detector="proximity")
+closure.test(wilmore.ch) #H0: population is closed.
+
+traps=read.traps("wilmore_traps.txt", detector="proximity")
+
+maskWilmore<- read.mask(file="mask_wolverine_wilmore_Wcov_utm11n_tempModified_31mar23.txt", header=T)
+cov<- read.csv("mask_wolverine_wilmore_Wcov_utm11n_tempModified_31mar23.csv", header=T)
+covMask<- data.frame(cov$veg2010, cov$TRI, cov$snowcov, cov$HFI2012)
+covariates(maskWilmore)<- covMask
+covariates(maskWilmore)[,c("veg2010", "TRI", "snowcov", "HFI2012")]<-c(cov$veg2010, cov$TRI, cov$snowcov, cov$HFI2012)
+
+plot(maskWilmore)
+plot(maskWilmore, cov="snowcov")
+plot(traps, add=T)
+plot(wilmore.ch, add=T,track=T)
+
+mod0<-secr.fit(wilmore.ch, mask=maskWilmore)
+mod_g0_T<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~T))
+mod_g0_b<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~b))
+mod_g0_t<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~t))
+mod_g0_B<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~B))
+mod_g0_bk<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~bk))
+mod_g0_Bk<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~Bk))
+mod_g0_k<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~k))
+mod_g0_K<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~K))
+mod_g0_h2<-secr.fit(wilmore.ch, mask=maskWilmore, model=list(g0~h2))
+
+mod_D_allcov<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~veg2010+TRI+snowcov+HFI2012))
+mod_D_allcov_neldermead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~veg2010+TRI+snowcov+HFI2012), method = "Nelder-Mead", start =mod_D_allcov)
+mod_D_noTRI<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~veg2010+snowcov+HFI2012))
+mod_D_noTRI_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~veg2010+snowcov+HFI2012), method = "Nelder-Mead", start =mod_D_noTRI)
+mod_D_noVeg10<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~TRI+snowcov+HFI2012))
+mod_D_noVeg10_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~TRI+snowcov+HFI2012), method = "Nelder-Mead", start =mod_D_noVeg10)
+mod_D_Snow.HFI<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~snowcov+HFI2012))
+mod_D_Snow.HFI_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~snowcov+HFI2012), method = "Nelder-Mead", start =mod_D_Snow.HFI)
+mod_D_HFI<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~HFI2012))
+mod_D_HFI_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~HFI2012), method = "Nelder-Mead", start =mod_D_HFI)
+mod_D_veg10<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~veg2010))
+mod_D_veg10_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~veg2010), method = "Nelder-Mead", start =mod_D_veg10)
+mod_D_TRI<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~TRI))
+mod_D_snowcov<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~snowcov))
+mod_D_snowcov.veg10<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~snowcov+veg2010))
+mod_D_snowcov.veg10_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~snowcov+veg2010), method = "Nelder-Mead", start =mod_D_snowcov.veg10)
+mod_D_snowcov.TRI<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~snowcov+TRI))
+mod_D_HFI.veg<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~HFI2012+veg2010))
+mod_D_HFI.veg_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~HFI2012+veg2010),method = "Nelder-Mead", start =mod_D_HFI.veg)
+mod_D_HFI.TRI<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~HFI2012+TRI))
+mod_D_HFI.TRI_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~HFI2012+TRI),method = "Nelder-Mead", start =mod_D_HFI.TRI)
+mod_D_TRI.veg<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~TRI+veg2010))
+mod_D_TRI.veg_nelderMead<-secr.fit(wilmore.ch, mask=maskWilmore,model=list(D~TRI+veg2010),method = "Nelder-Mead", start =mod_D_TRI.veg)
+summary(mod_D_TRI.veg_nelderMead)
+
+######### Kananaskis #########
+kan.ch <- read.capthist("kan_capthist.txt", "kan_traps.txt", detector="proximity")
+closure.test(kan.ch) #H0: population is closed.
+
+traps_kan=read.traps("kan_traps.txt", detector="proximity")
+
+maskKan<- read.mask(file="mask_kan_Wcov_utm11n.txt", header=T)
+cov_kan<- read.csv("maskKan_Wcov_utm11n.csv", header=T)
+covMask_kan<- data.frame(cov_kan$veg2010, cov_kan$TRI, cov_kan$snowcov, cov_kan$HFI2012)
+covariates(maskKan)<- covMask_kan
+covariates(maskKan)[,c("veg2010", "TRI", "snowcov", "HFI2012")]<-c(cov_kan$veg2010, cov_kan$TRI, cov_kan$snowcov, cov_kan$HFI2012)
+
+plot(maskKan)
+plot(maskKan, cov="HFI2012")
+plot(traps_kan, add=T)
+plot(kan.ch, add=T,track=T)
+
+modkan_0<-secr.fit(kan.ch, mask=maskKan)
+modKan_g0_T<-secr.fit(kan.ch, mask=maskKan, model=list(g0~T))
+modKan_g0_b<-secr.fit(kan.ch, mask=maskKan, model=list(g0~b))
+modKan_g0_t<-secr.fit(kan.ch, mask=maskKan, model=list(g0~t))
+modkan_g0_B<-secr.fit(kan.ch, mask=maskKan, model=list(g0~B))
+modkan_g0_bk<-secr.fit(kan.ch, mask=maskKan, model=list(g0~bk))
+modkan_g0_Bk<-secr.fit(kan.ch, mask=maskKan, model=list(g0~Bk))
+modKan_g0_k<-secr.fit(kan.ch, mask=maskKan, model=list(g0~k))
+modKan_g0_K<-secr.fit(kan.ch, mask=maskKan, model=list(g0~K))
+modKan_g0_h2<-secr.fit(kan.ch, mask=maskKan, model=list(g0~h2))
+
+modKan_D_TRI<-secr.fit(kan.ch, mask=maskKan,model=list(D~TRI))
+modKan_D_snowcov<-secr.fit(kan.ch, mask=maskKan,model=list(D~snowcov))
+modKan_D_veg2010<-secr.fit(kan.ch, mask=maskKan,model=list(D~veg2010))
+modKan_D_veg2010_nelderMead<-secr.fit(kan.ch, mask=maskKan,model=list(D~veg2010), method="Nelder-Mead", start= modKan_D_veg2010)
+modKan_D_HFI<-secr.fit(kan.ch, mask=maskKan,model=list(D~HFI2012))
+modKan_D_HFI_nelderMead<-secr.fit(kan.ch, mask=maskKan,model=list(D~HFI2012), method="Nelder-Mead", start= modKan_D_HFI)
+modKan_D_snow.HFI<-secr.fit(kan.ch, mask=maskKan,model=list(D~HFI2012+snowcov))
+modKan_D_snow.HFI_nelderMead<-secr.fit(kan.ch, mask=maskKan,model=list(D~HFI2012+snowcov), method="Nelder-Mead", start= modKan_D_snow.HFI)
+modKan_D_snow.veg<-secr.fit(kan.ch, mask=maskKan,model=list(D~veg2010+snowcov))
+modKan_D_snow.veg_nelderMead<-secr.fit(kan.ch, mask=maskKan,model=list(D~veg2010+snowcov), method="Nelder-Mead", start= modKan_D_snow.veg)
+modKan_D_snow.TRI<-secr.fit(kan.ch, mask=maskKan,model=list(D~TRI+snowcov))
+modKan_D_veg.HFI<-secr.fit(kan.ch, mask=maskKan,model=list(D~HFI2012+veg2010))
+modKan_D_TRI.HFI<-secr.fit(kan.ch, mask=maskKan,model=list(D~HFI2012+TRI))
+modKan_D_TRI.snow.HFI<-secr.fit(kan.ch, mask=maskKan,model=list(D~snowcov+TRI+HFI2012))
+modKan_D_veg.snow.HFI<-secr.fit(kan.ch, mask=maskKan,model=list(D~snowcov+veg2010+HFI2012))
+summary(modKan_D_veg.snow.HFI)
